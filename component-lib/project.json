@@ -1,0 +1,9 @@
+{
+  "name": "component-lib",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "component-lib/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project component-lib --web",
+  "targets": {}
+}
