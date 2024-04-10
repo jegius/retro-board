@@ -1,34 +1,46 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entity/User';
+import { UserEntity } from '../entity/user.entity';
+
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
     constructor(
-        @InjectRepository(User)
-        private usersRepository: Repository<User>,
+        @InjectRepository(UserEntity)
+        private usersRepository: Repository<UserEntity>,
     ) {}
 
-    async findOneByEmail(email: string): Promise<User | undefined> {
+    async hashPassword(password: string): Promise<string> {
+        const salt = await bcrypt.genSalt();
+        return bcrypt.hash(password, salt);
+    }
+
+    async findOneByEmail(email: string): Promise<UserEntity | undefined> {
         return await this.usersRepository.findOneBy({ email });
     }
 
-    async findAll(): Promise<User[]> {
+    async findAll(): Promise<UserEntity[]> {
         return await this.usersRepository.find();
     }
 
-    async findOne(id: any): Promise<User | undefined> {
-        return await this.usersRepository.findOne(id);
+    async findOne(id: number): Promise<UserEntity | undefined> {
+        return await this.usersRepository.findOneBy({ id });
     }
 
-    async create(user: User): Promise<User> {
-        return await this.usersRepository.save(user);
+    async create(userDto: UserEntity): Promise<UserEntity> {
+        userDto.password = await this.hashPassword(userDto.password);
+        return this.usersRepository.save(userDto);
     }
 
-    async update(id: any, updateUserDto: Partial<User>): Promise<User> {
+    async update(id: number, updateUserDto: Partial<UserEntity>): Promise<UserEntity> {
+        if (updateUserDto.password) {
+            updateUserDto.password = await this.hashPassword(updateUserDto.password);
+        }
+
         await this.usersRepository.update(id, updateUserDto);
-        return await this.usersRepository.findOne(id);
+        return this.usersRepository.findOne({ where: { id } });
     }
 
     async remove(id: number): Promise<void> {

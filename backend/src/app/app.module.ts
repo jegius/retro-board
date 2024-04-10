@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { User } from './user/entity/User';
+import { UserEntity } from './user/entity/user.entity';
+import * as process from 'process';
+import { RoleModule } from './role/role.module';
+import { RoleEntity } from './role/entity/role.entity';
+import { SetupInitialRolesAndUser1712763971933 } from '../migration/1712763971933-SetupInitialRolesAndUser';
 
 @Module({
   imports: [
@@ -16,13 +18,17 @@ import { User } from './user/entity/User';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User],
-      synchronize: true, // Внимание: используйте synchronize только для разработки!
+      entities: [UserEntity, RoleEntity],
+      synchronize: process.env.SYNCHRONIZE === 'true',
+      autoLoadEntities: true,
+      migrationsRun: true,
+      migrations: [SetupInitialRolesAndUser1712763971933],
     }),
     UserModule,
+    RoleModule,
     AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

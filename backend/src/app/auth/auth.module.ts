@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import jwtConfig from './jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '../user/user.module';
+import { RoleModule } from '../role/role.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { UserModule } from '../user/user.module';
       secret: jwtConfig.secret,
       signOptions: jwtConfig.signOptions,
     }),
-    UserModule
+    UserModule,
+    RoleModule
   ],
   providers: [AuthService, GoogleStrategy, GithubStrategy],
   controllers: [AuthController],
