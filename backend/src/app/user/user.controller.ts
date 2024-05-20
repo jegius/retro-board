@@ -1,7 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException, HttpStatus,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  UsePipes,
+  ValidationPipe
+} from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { UserEntity } from './entity/user.entity';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('users')
 @Controller('users')
@@ -34,6 +47,8 @@ export class UserController {
     },
   })
   @Get()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   async findAll(): Promise<UserEntity[]> {
     return this.userService.findAll();
   }
@@ -60,6 +75,8 @@ export class UserController {
     },
   })
   @Get(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   async findOne(@Param('id') id: number): Promise<UserEntity> {
     return this.userService.findOne(id);
   }
@@ -86,13 +103,28 @@ export class UserController {
         id: 3,
         email: 'newuser@example.com',
         name: 'New UserEntity',
-        role: { id: 1, name: 'Administrator' }
+        role: { id: 1, name: 'Administrator' },
+        password: 'Password123',
       },
     },
   })
+  @ApiResponse({
+    status: 400,
+    description: 'User with this email or ID already exists.',
+  })
   @Post()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   async create(@Body() user: UserEntity): Promise<UserEntity> {
-    return this.userService.create(user);
+    try {
+      return this.userService.create(user);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @ApiOperation({ summary: 'Update user' })
@@ -122,6 +154,8 @@ export class UserController {
     },
   })
   @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   async update(@Param('id') id: number, @Body() user: Partial<UserEntity>): Promise<UserEntity> {
     return this.userService.update(id, user);
   }
@@ -136,6 +170,8 @@ export class UserController {
     },
   })
   @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   async remove(@Param('id') id: number): Promise<void> {
     return this.userService.remove(id);
   }

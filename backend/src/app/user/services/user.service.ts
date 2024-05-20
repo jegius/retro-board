@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user.entity';
@@ -13,6 +13,9 @@ export class UserService {
     ) {}
 
     async hashPassword(password: string): Promise<string> {
+        if (!password) {
+            throw new Error('Password is required to hash.');
+        }
         const salt = await bcrypt.genSalt();
         return bcrypt.hash(password, salt);
     }
@@ -30,6 +33,18 @@ export class UserService {
     }
 
     async create(userDto: UserEntity): Promise<UserEntity> {
+        const existingUserByEmail = await this.findOneByEmail(userDto.email);
+        if (existingUserByEmail) {
+            throw new HttpException('User with this email already exists.', HttpStatus.BAD_REQUEST);
+        }
+
+        if (userDto.id) {
+            const existingUserById = await this.findOne(userDto.id);
+            if (existingUserById) {
+                throw new HttpException('User with this ID already exists.', HttpStatus.BAD_REQUEST);
+            }
+        }
+
         userDto.password = await this.hashPassword(userDto.password);
         return this.usersRepository.save(userDto);
     }
