@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, ManyToOne } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    JoinColumn,
+    ManyToOne,
+    ManyToMany,
+    JoinTable
+} from 'typeorm';
 import { RoleEntity } from '../../role/entity/role.entity';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
@@ -24,11 +33,11 @@ export class UserEntity {
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', nullable: true })
     registeredAt: Date;
 
-    @ManyToOne(() => RoleEntity, role => role.users)
-    @JoinColumn({ name: 'roleId' })
-    @IsNotEmpty({ message: 'Name is required' })
-    role: RoleEntity;
-
-    @Column({ nullable: true })
-    roleId: number;
+    @ManyToMany(() => RoleEntity)
+    @JoinTable({
+        name: "user_roles",
+        joinColumn: { name: "user_id", referencedColumnName: "id" },
+        inverseJoinColumn: { name: "role_id", referencedColumnName: "id" }
+    })
+    roles: RoleEntity[];
 }

@@ -32,8 +32,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         username,
         email,
         password: hashedPassword,
-        role,
-        roleId: role.id
+        roles: [role]
       } as UserEntity);
     }
     return user;

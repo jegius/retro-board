@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GithubStrategy } from './strategies/github.strategy';
@@ -17,11 +17,11 @@ import { JwtStrategy } from './strategies/jwt.stategy';
       secret: jwtConfig.secret,
       signOptions: jwtConfig.signOptions,
     }),
-    UserModule,
-    RoleModule
+    forwardRef(() => UserModule),
+    forwardRef(() => RoleModule)
   ],
   providers: [AuthService, GoogleStrategy, GithubStrategy, JwtStrategy],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, JwtStrategy],
 })
 export class AuthModule {}

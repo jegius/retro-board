@@ -8,14 +8,31 @@ import {
   Post,
   Put,
   UseGuards,
-  UsePipes,
-  ValidationPipe
 } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { UserEntity } from './entity/user.entity';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
+class Role {
+  id: number;
+  name: string;
+}
+
+class UserWithRoleExample {
+  id: number;
+  email: string;
+  username: string;
+  registeredAt: Date;
+  roles: Role[];
+}
+
+class UserCreateUpdateExample {
+  email: string;
+  username: string;
+  password: string;
+  roles: number[];
+}
 @ApiTags('users')
 @Controller('users')
 export class UserController {
@@ -66,11 +83,10 @@ export class UserController {
     type: UserEntity,
     schema: {
       example: {
-        id: 1,
-        email: 'email@example.com',
-        username: 'John Doe',
-        roleId: 1,
-        role: { id: 1, name: 'Administrator' }
+        email: 'user@example.com',
+        username: 'New User',
+        password: 'Password123',
+        roles: [1],
       },
     },
   })
@@ -87,24 +103,10 @@ export class UserController {
     type: UserEntity,
     schema: {
       example: {
-        email: 'newuser@example.com',
-        name: 'New UserEntity',
-        role: { id: 1, name: 'Administrator' },
+        email: 'user@example.com',
+        username: 'New User',
         password: 'Password123',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'UserEntity is created',
-    type: UserEntity,
-    schema: {
-      example: {
-        id: 3,
-        email: 'newuser@example.com',
-        name: 'New UserEntity',
-        role: { id: 1, name: 'Administrator' },
-        password: 'Password123',
+        roles: [1],
       },
     },
   })
@@ -127,29 +129,30 @@ export class UserController {
     }
   }
 
-  @ApiOperation({ summary: 'Update user' })
-  @ApiParam({ name: 'id', description: 'UserEntity ID', type: Number, example: 1 })
+  @ApiOperation({ summary: 'Create user' })
   @ApiBody({
-    description: 'Updated user payload',
-    type: UserEntity,
+    description: 'UserEntity Payload',
+    type: UserCreateUpdateExample,
     schema: {
       example: {
-        email: 'user1updated@example.com',
-        name: 'John Doe Updated',
-        role: { id: 1, name: 'Administrator' },
+        email: 'user@example.com',
+        username: 'New User',
+        password: 'Password123',
+        roles: [1],
       },
     },
   })
   @ApiResponse({
-    status: 200,
-    description: 'UserEntity is updated',
-    type: UserEntity,
+    status: 201,
+    description: 'UserEntity is created',
+    type: UserWithRoleExample,
     schema: {
       example: {
-        id: 1,
-        email: 'user1updated@example.com',
-        name: 'John Doe Updated',
-        role: { id: 1, name: 'Administrator' },
+        id: 3,
+        email: 'user@example.com',
+        username: 'New User',
+        registeredAt: '2023-01-01T00:00:00.000Z',
+        roles: [{ id: 1, name: 'Administrator' }],
       },
     },
   })
