@@ -6,13 +6,17 @@ import {
   HttpException, HttpStatus,
   Param,
   Post,
-  Put,
-  UseGuards,
+  Put, UploadedFile,
+  UseGuards, UseInterceptors
 } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { UserEntity } from './entity/user.entity';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '../role/decorators/roles.decorator';
+import { RolesGuard } from '../role/guards/roles.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 class Role {
   id: number;
@@ -34,6 +38,7 @@ class UserCreateUpdateExample {
   roles: number[];
 }
 @ApiTags('users')
+@UseGuards(AuthGuard('jwt'))
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {
@@ -50,21 +55,18 @@ export class UserController {
           id: 1,
           email: 'email@example.com',
           username: 'John Doe',
-          roleId: 1, // Это новое поле
-          role: { id: 1, name: 'Administrator' } // Пример объекта роли
+          roles: [{ id: 1, name: 'Administrator' }],
         },
         {
           id: 2,
           email: 'jane@example.com',
           username: 'Jane Doe',
-          roleId: 2,
-          role: { id: 2, name: 'User' }
+          roles: [{ id: 1, name: 'Administrator' }],
         }
       ],
     },
   })
   @Get()
-  @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('access-token')
   async findAll(): Promise<UserEntity[]> {
     return this.userService.findAll();
@@ -91,7 +93,6 @@ export class UserController {
     },
   })
   @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('access-token')
   async findOne(@Param('id') id: number): Promise<UserEntity> {
     return this.userService.findOne(id);
@@ -106,7 +107,7 @@ export class UserController {
         email: 'user@example.com',
         username: 'New User',
         password: 'Password123',
-        roles: [1],
+        roles: [{ id: 1, name: 'Administrator' }],
       },
     },
   })
@@ -115,7 +116,8 @@ export class UserController {
     description: 'User with this email or ID already exists.',
   })
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
   @ApiBearerAuth('access-token')
   async create(@Body() user: UserEntity): Promise<UserEntity> {
     try {
@@ -129,35 +131,35 @@ export class UserController {
     }
   }
 
-  @ApiOperation({ summary: 'Create user' })
+  @ApiOperation({ summary: 'Update user' })
   @ApiBody({
-    description: 'UserEntity Payload',
-    type: UserCreateUpdateExample,
+    description: 'Payload for updating a user',
     schema: {
       example: {
         email: 'user@example.com',
         username: 'New User',
         password: 'Password123',
-        roles: [1],
+        roles: [{ id: 1, name: 'ADMIN' }],
       },
     },
   })
+  @Roles('ADMIN')
   @ApiResponse({
-    status: 201,
-    description: 'UserEntity is created',
+    status: 200,
+    description: 'UserEntity is updated',
     type: UserWithRoleExample,
     schema: {
       example: {
         id: 3,
-        email: 'user@example.com',
-        username: 'New User',
+        email: 'example@example.com',
+        username: 'UpdatedUserName',
         registeredAt: '2023-01-01T00:00:00.000Z',
-        roles: [{ id: 1, name: 'Administrator' }],
+        roles: [{ id: 2, name: 'User' }],
       },
     },
   })
   @Put(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(RolesGuard)
   @ApiBearerAuth('access-token')
   async update(@Param('id') id: number, @Body() user: Partial<UserEntity>): Promise<UserEntity> {
     return this.userService.update(id, user);
@@ -173,9 +175,41 @@ export class UserController {
     },
   })
   @Delete(':id')
-  @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('access-token')
   async remove(@Param('id') id: number): Promise<void> {
     return this.userService.remove(id);
+  }
+
+  @Post('upload-avatar/:id')
+  @ApiOperation({ summary: 'Upload a user avatar' })
+  @ApiParam({ name: 'id', required: true, description: 'User ID', type: Number })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'User Avatar',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'File content of the avatar'
+        }
+      }
+    }
+  })
+  @ApiBearerAuth('access-token')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './dist/backend/uploads/avatars',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        callback(null, `${file.fieldname}-${uniqueSuffix}.${extension}`);
+      }
+    })
+  }))
+  async uploadFile(@Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
+    const avatarUrl = `uploads/avatars/${file.filename}`;
+    return this.userService.updateAvatar(id, avatarUrl);
   }
 }

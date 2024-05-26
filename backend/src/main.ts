@@ -46,6 +46,7 @@ async function bootstrap() {
   Logger.log(
     `🚀 Swagger is running on: http://localhost:${port}/swagger/${globalPrefix}`
   );
+
 }
 
 bootstrap();

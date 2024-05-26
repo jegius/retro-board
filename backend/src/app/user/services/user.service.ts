@@ -91,4 +91,13 @@ export class UserService {
     async remove(id: number): Promise<void> {
         await this.usersRepository.delete(id);
     }
+
+    async updateAvatar(userId: number, avatarUrl: string): Promise<UserEntity> {
+        const user = await this.usersRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+        user.avatarUrl = avatarUrl;
+        return this.usersRepository.save(user);
+    }
 }

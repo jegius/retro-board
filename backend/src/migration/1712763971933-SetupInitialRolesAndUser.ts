@@ -17,7 +17,8 @@ export class SetupInitialRolesAndUser1712763971933 implements MigrationInterface
             "username" VARCHAR(100) NOT NULL,
             "email" VARCHAR(100) NOT NULL,
             "password" VARCHAR(255) NOT NULL,
-            "registeredAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "registeredAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "avatarUrl" VARCHAR(255)
             );
     `);
 

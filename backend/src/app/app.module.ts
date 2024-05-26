@@ -8,9 +8,20 @@ import * as process from 'process';
 import { RoleModule } from './role/role.module';
 import { RoleEntity } from './role/entity/role.entity';
 import { SetupInitialRolesAndUser1712763971933 } from '../migration/1712763971933-SetupInitialRolesAndUser';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { MulterModule } from '@nestjs/platform-express';
+import { MulterConfigService } from './config/miller.config';
 
 @Module({
   imports: [
+    MulterModule.registerAsync({
+      useClass: MulterConfigService,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, 'uploads'),
+      serveRoot: '/uploads',
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.POSTGRES_HOST,

@@ -40,4 +40,7 @@ export class UserEntity {
         inverseJoinColumn: { name: "role_id", referencedColumnName: "id" }
     })
     roles: RoleEntity[];
+
+    @Column({ nullable: true })
+    avatarUrl: string;
 }

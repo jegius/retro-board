@@ -15,6 +15,7 @@ import { AuthService } from './auth.service';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './entity/login.dto';
 import { RegistrationDto } from './entity/registration.dto';
+import { logger } from 'nx/src/utils/logger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -27,6 +28,7 @@ export class AuthController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   googleLogin(): void {
+    logger.log('Google login')
   }
 
   @ApiOperation({ summary: 'Google Login Callback' })
@@ -59,6 +61,7 @@ export class AuthController {
   @Get('github')
   @UseGuards(AuthGuard('github'))
   githubLogin(): void {
+    logger.log('GitHub login')
   }
 
   @ApiOperation({ summary: 'GitHub Login Callback' })
