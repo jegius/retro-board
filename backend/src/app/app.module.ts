@@ -9,10 +9,9 @@ import { RoleModule } from './role/role.module';
 import { RoleEntity } from './role/entity/role.entity';
 import { SetupInitialRolesAndUser1712763971933 } from '../migration/1712763971933-SetupInitialRolesAndUser';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigService } from './config/miller.config';
-import { LocalStorageStrategy } from './user/services/local-storage.strategy';
+import * as path from 'path';
 
 @Module({
   imports: [
@@ -20,7 +19,7 @@ import { LocalStorageStrategy } from './user/services/local-storage.strategy';
       useClass: MulterConfigService,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, 'uploads'),
+      rootPath: path.join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
     TypeOrmModule.forRoot({
