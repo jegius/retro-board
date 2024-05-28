@@ -3,11 +3,14 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException, HttpStatus,
+  HttpException,
+  HttpStatus, Inject,
   Param,
   Post,
-  Put, UploadedFile,
-  UseGuards, UseInterceptors
+  Put,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { UserEntity } from './entity/user.entity';
@@ -16,60 +19,43 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../role/decorators/roles.decorator';
 import { RolesGuard } from '../role/guards/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { UserDto } from './entity/user.dto';
+import { toUserDto, userEntitiesToUserDto } from './mappers/user.mappers';
+import { IStorageStrategy } from './strategies/storage.strategy';
 
-class Role {
-  id: number;
-  name: string;
-}
-
-class UserWithRoleExample {
-  id: number;
-  email: string;
-  username: string;
-  registeredAt: Date;
-  roles: Role[];
-}
-
-class UserCreateUpdateExample {
-  email: string;
-  username: string;
-  password: string;
-  roles: number[];
-}
 @ApiTags('users')
 @UseGuards(AuthGuard('jwt'))
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {
+  constructor(private readonly userService: UserService, @Inject('IStorageStrategy') private readonly storageStrategy: IStorageStrategy) {
   }
 
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,
     description: 'Return all users',
-    type: [UserEntity],
     schema: {
       example: [
         {
           id: 1,
           email: 'email@example.com',
           username: 'John Doe',
-          roles: [{ id: 1, name: 'Administrator' }],
+          roles: [{ id: 1, name: 'Administrator' }]
         },
         {
           id: 2,
           email: 'jane@example.com',
           username: 'Jane Doe',
-          roles: [{ id: 1, name: 'Administrator' }],
+          roles: [{ id: 1, name: 'Administrator' }]
         }
-      ],
-    },
+      ]
+    }
   })
   @Get()
   @ApiBearerAuth('access-token')
-  async findAll(): Promise<UserEntity[]> {
-    return this.userService.findAll();
+  async findAll(): Promise<UserDto[]> {
+    return this.userService.findAll()
+      .then(userEntitiesToUserDto);
   }
 
 
@@ -77,43 +63,48 @@ export class UserController {
   @ApiParam({
     name: 'id',
     description: 'UserEntity ID',
-    type: Number,
+    type: Number
   })
   @ApiResponse({
     status: 200,
     description: 'Return user',
-    type: UserEntity,
     schema: {
       example: {
         email: 'user@example.com',
         username: 'New User',
         password: 'Password123',
-        roles: [1],
-      },
-    },
+        roles: [1]
+      }
+    }
   })
   @Get(':id')
   @ApiBearerAuth('access-token')
-  async findOne(@Param('id') id: number): Promise<UserEntity> {
-    return this.userService.findOne(id);
+  async findOne(@Param('id') id: number): Promise<UserDto> {
+    return this.userService.findOne(id).then(toUserDto);
   }
 
   @ApiOperation({ summary: 'Create user' })
   @ApiBody({
     description: 'UserEntity Payload',
-    type: UserEntity,
     schema: {
       example: {
-        email: 'user@example.com',
+        email: 'email@example.com',
         username: 'New User',
         password: 'Password123',
-        roles: [{ id: 1, name: 'Administrator' }],
-      },
-    },
+        roles: [{
+          id: 1,
+          name: 'Administrator'
+        }]
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success'
   })
   @ApiResponse({
     status: 400,
-    description: 'User with this email or ID already exists.',
+    description: 'User with this email or username already exists.'
   })
   @Post()
   @Roles('ADMIN')
@@ -139,30 +130,29 @@ export class UserController {
         email: 'user@example.com',
         username: 'New User',
         password: 'Password123',
-        roles: [{ id: 1, name: 'ADMIN' }],
-      },
-    },
+        roles: [{ id: 1, name: 'ADMIN' }]
+      }
+    }
   })
   @Roles('ADMIN')
   @ApiResponse({
     status: 200,
     description: 'UserEntity is updated',
-    type: UserWithRoleExample,
     schema: {
       example: {
         id: 3,
         email: 'example@example.com',
         username: 'UpdatedUserName',
         registeredAt: '2023-01-01T00:00:00.000Z',
-        roles: [{ id: 2, name: 'User' }],
-      },
-    },
+        roles: [{ id: 2, name: 'User' }]
+      }
+    }
   })
   @Put(':id')
   @UseGuards(RolesGuard)
   @ApiBearerAuth('access-token')
-  async update(@Param('id') id: number, @Body() user: Partial<UserEntity>): Promise<UserEntity> {
-    return this.userService.update(id, user);
+  async update(@Param('id') id: number, @Body() user: Partial<UserEntity>): Promise<UserDto> {
+    return this.userService.update(id, user).then(toUserDto);
   }
 
   @ApiOperation({ summary: 'Delete user' })
@@ -171,8 +161,8 @@ export class UserController {
     status: 200,
     description: 'UserEntity is deleted',
     schema: {
-      example: { message: 'UserEntity successfully deleted.' },
-    },
+      example: { message: 'UserEntity successfully deleted.' }
+    }
   })
   @Delete(':id')
   @ApiBearerAuth('access-token')
@@ -198,18 +188,22 @@ export class UserController {
     }
   })
   @ApiBearerAuth('access-token')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './dist/backend/uploads/avatars',
-      filename: (req, file, callback) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const extension = file.originalname.split('.').pop();
-        callback(null, `${file.fieldname}-${uniqueSuffix}.${extension}`);
+  @ApiResponse({
+    status: 200,
+    description: 'UserEntity is updated',
+    schema: {
+      example: {
+        id: 3,
+        email: 'example@example.com',
+        username: 'UpdatedUserName',
+        registeredAt: '2023-01-01T00:00:00.000Z',
+        roles: [{ id: 2, name: 'User' }]
       }
-    })
-  }))
-  async uploadFile(@Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
-    const avatarUrl = `uploads/avatars/${file.filename}`;
-    return this.userService.updateAvatar(id, avatarUrl);
+    }
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@Param('id') id: number, @UploadedFile() file: Express.Multer.File): Promise<UserDto> {
+    const avatarUrl = await this.storageStrategy.saveFile(file);
+    return this.userService.updateAvatar(id, avatarUrl).then(toUserDto);
   }
 }

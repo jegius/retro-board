@@ -5,10 +5,14 @@ import { UserService } from './services/user.service';
 import { UserController } from './user.controller';
 import { RoleEntity } from '../role/entity/role.entity';
 import { RoleModule } from '../role/role.module';
+import { LocalStorageStrategy } from './services/local-storage.strategy';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity, RoleEntity]), RoleModule],
-  providers: [UserService],
+  providers: [UserService, {
+    provide: 'IStorageStrategy',
+    useClass: LocalStorageStrategy,
+  },],
   controllers: [UserController],
   exports: [UserService]
 })

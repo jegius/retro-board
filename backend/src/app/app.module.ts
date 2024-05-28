@@ -12,6 +12,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigService } from './config/miller.config';
+import { LocalStorageStrategy } from './user/services/local-storage.strategy';
 
 @Module({
   imports: [

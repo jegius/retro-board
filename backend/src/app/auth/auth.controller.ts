@@ -38,11 +38,6 @@ export class AuthController {
       example: {
         accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
         refreshToken: 'def50200a9c18b6a35...',
-        profile: {
-          id: '123456789',
-          displayName: 'John Doe',
-          emails: [{ value: 'example@gmail.com' }],
-        }
       }
     }
   })
@@ -70,12 +65,7 @@ export class AuthController {
     schema: {
       example: {
         accessToken: 'ghp_luCIsoJmL4098PDnLPDa4zG7qsa...',
-        refreshToken: null,
-        profile: {
-          id: '987654321',
-          username: 'janedoe',
-          emails: [{ value: 'example@github.com' }],
-        }
+        refreshToken: 'fett3_nehcggeb%g35bc0...',
       }
     }
   })
@@ -120,16 +110,12 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with email and password' })
   @ApiBody({
     required: true,
-    type: LoginDto,
-    examples: {
-      a: {
-        summary: 'Valid example',
-        value: {
-          email: 'john.doe@example.com',
-          password: 'password123',
-        },
-      },
-    },
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'def50200a9c18b6a35...',
+      }
+    }
   })
   @ApiResponse({
     status: 200,
@@ -149,17 +135,11 @@ export class AuthController {
   @ApiBody({
     description: 'User registration data',
     required: true,
-    type: RegistrationDto,
-    examples: {
-      a: {
-        summary: 'Valid example',
-        value: {
-          username: 'johndoe',
-          email: 'john.doe@example.com',
-          password: 'password123',
-        },
-      },
-    },
+    schema: {
+      example: {
+        message: 'User has been successfully registered.'
+      }
+    }
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
