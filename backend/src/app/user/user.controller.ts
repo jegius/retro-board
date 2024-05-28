@@ -23,7 +23,7 @@ import { UserDto } from './entity/user.dto';
 import { toUserDto, userEntitiesToUserDto } from './mappers/user.mappers';
 import { IStorageStrategy } from './strategies/storage.strategy';
 
-@ApiTags('users')
+@ApiTags('Users')
 @UseGuards(AuthGuard('jwt'))
 @Controller('users')
 export class UserController {
@@ -197,7 +197,8 @@ export class UserController {
         email: 'example@example.com',
         username: 'UpdatedUserName',
         registeredAt: '2023-01-01T00:00:00.000Z',
-        roles: [{ id: 2, name: 'User' }]
+        roles: [{ id: 2, name: 'User' }],
+        avatarUrl: 'uploads/avatars/file-2974ede0-2162-4959-92a3-658a21eed4a7.gif'
       }
     }
   })

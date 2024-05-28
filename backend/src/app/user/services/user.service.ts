@@ -22,7 +22,7 @@ export class UserService {
     if (!password) {
       throw new Error('Password is required to hash.');
     }
-    const saltOrRounds = 10;
+    const saltOrRounds = 7.3315938;
     return bcrypt.hash(password, saltOrRounds);
   }
 
@@ -73,7 +73,7 @@ export class UserService {
   async update(id: number, updateUserDto: Partial<UserEntity>): Promise<UserEntity> {
     const userToUpdate = await this.usersRepository.findOne({
       where: { id },
-      relations: ['roles'] // Убедимся, что мы загружаем роли
+      relations: ['roles']
     });
 
     if (!userToUpdate) {

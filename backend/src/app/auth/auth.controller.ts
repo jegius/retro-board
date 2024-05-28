@@ -17,7 +17,7 @@ import { LoginDto } from './entity/login.dto';
 import { RegistrationDto } from './entity/registration.dto';
 import { logger } from 'nx/src/utils/logger';
 
-@ApiTags('auth')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
 
@@ -110,12 +110,16 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with email and password' })
   @ApiBody({
     required: true,
-    schema: {
-      example: {
-        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-        refreshToken: 'def50200a9c18b6a35...',
-      }
-    }
+    type: LoginDto,
+    examples: {
+      a: {
+        summary: 'Valid example',
+        value: {
+          email: 'john.doe@example.com',
+          password: 'password123',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,

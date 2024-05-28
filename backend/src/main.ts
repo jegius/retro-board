@@ -15,10 +15,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('retro board API')
+    .setTitle('Retro board API')
     .setDescription('The example API description')
     .setVersion('1.0')
-    .addTag('retro board')
+    .addTag('Retro board')
     .addBearerAuth(
       {
         type: 'http',
