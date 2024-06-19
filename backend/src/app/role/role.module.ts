@@ -9,6 +9,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [TypeOrmModule.forFeature([RoleEntity]), forwardRef(() => AuthModule),],
   providers: [RoleService],
   controllers: [RoleController],
-  exports: [RoleService],
+  exports: [RoleService, TypeOrmModule],
 })
 export class RoleModule {}

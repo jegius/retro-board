@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { UserEntity } from './user/entity/user.entity';
 import * as process from 'process';
 import { RoleModule } from './role/role.module';
 import { RoleEntity } from './role/entity/role.entity';
@@ -12,7 +11,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigService } from './config/miller.config';
 import * as path from 'path';
-import { BoardEntity } from './board/entity/board.entity';
 import { ColumnsEntity } from './columns/enitity/columns.entity';
 import { CommentEntity } from './comment/entity/comment.entity';
 import { IssueEntity } from './issue/enitiy/issue.entity';
@@ -22,6 +20,9 @@ import { RatingItemEntity } from './section/enitity/rating-item.entity';
 import { SectionEntity } from './section/enitity/section.entity';
 import { SessionEntity } from './session/entity/session.entity';
 import { StickerEntity } from './sticker/entity/sticker.entity';
+import { BoardModule } from './board/board.module';
+import { UserEntity } from './user/entity/user.entity';
+import { BoardEntity } from './board/entity/board.entity';
 
 @Module({
   imports: [
@@ -51,7 +52,7 @@ import { StickerEntity } from './sticker/entity/sticker.entity';
         RatingItemEntity,
         SectionEntity,
         SessionEntity,
-        StickerEntity
+        StickerEntity,
       ],
       synchronize: process.env.SYNCHRONIZE === 'true',
       autoLoadEntities: true,
@@ -61,7 +62,9 @@ import { StickerEntity } from './sticker/entity/sticker.entity';
     UserModule,
     RoleModule,
     AuthModule,
+    BoardModule,
   ],
+  exports: [TypeOrmModule],
   controllers: [],
   providers: [],
 })

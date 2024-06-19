@@ -4,7 +4,7 @@ import {
     Column,
     CreateDateColumn,
     ManyToMany,
-    JoinTable, OneToMany, BaseEntity
+    JoinTable, OneToMany, BaseEntity, ManyToOne
 } from 'typeorm';
 import { RoleEntity } from '../../role/entity/role.entity';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
