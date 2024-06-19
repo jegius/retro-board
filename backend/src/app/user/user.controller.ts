@@ -55,7 +55,7 @@ export class UserController {
   @ApiBearerAuth('access-token')
   async findAll(): Promise<UserDto[]> {
     return this.userService.findAll()
-      .then(userEntitiesToUserDto);
+      .then(async users => await userEntitiesToUserDto(users));
   }
 
 

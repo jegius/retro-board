@@ -32,7 +32,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         username,
         email,
         password: hashedPassword,
-        roles: [role]
+        roles: Promise.resolve([role])
       } as UserEntity);
     }
     return user;

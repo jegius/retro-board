@@ -55,16 +55,17 @@ export class UserService {
     userDto.password = await this.hashPassword(userDto.password);
 
     const newUser: UserEntity = this.usersRepository.create(userDto);
+    const roles = await userDto.roles;
 
-    if (!userDto.roles || userDto.roles.length === 0) {
+    if (!userDto.roles || roles.length === 0) {
       const defaultRole = await this.rolesService.findOneByName(process.env.USER_ROLE_NAME);
       if (defaultRole) {
-        newUser.roles = [defaultRole];
+        newUser.roles = Promise.resolve([defaultRole]);
       }
     } else {
-      const roles = await Promise.all(userDto.roles.map(role => this.rolesService.findOne(role.id)));
+      const userRoles = await Promise.all(roles.map(role => this.rolesService.findOne(role.id)));
 
-      newUser.roles = roles.filter(role => role !== undefined) as RoleEntity[];
+      newUser.roles = Promise.resolve(userRoles.filter(role => role !== undefined) as RoleEntity[]);
     }
 
     return this.usersRepository.save(newUser);
@@ -85,8 +86,10 @@ export class UserService {
     }
 
     if (updateUserDto.roles) {
-      const roles = await Promise.all(updateUserDto.roles.map(role => this.rolesService.findOne(role.id)));
-      userToUpdate.roles = roles.filter(role => role !== undefined) as RoleEntity[];
+      const baseUserRoles =  await updateUserDto.roles;
+
+      const roles = await Promise.all(baseUserRoles.map(role => this.rolesService.findOne(role.id)));
+      userToUpdate.roles = Promise.resolve(roles.filter(role => role !== undefined) as RoleEntity[]);
     }
 
     await this.usersRepository.save(Object.assign(userToUpdate, updateUserDto));

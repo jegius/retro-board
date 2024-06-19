@@ -3,16 +3,17 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
-    JoinColumn,
-    ManyToOne,
     ManyToMany,
-    JoinTable
+    JoinTable, OneToMany, BaseEntity
 } from 'typeorm';
 import { RoleEntity } from '../../role/entity/role.entity';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { BoardEntity } from '../../board/entity/board.entity';
+import { CommentEntity } from '../../comment/entity/comment.entity';
+import { RatingItemEntity } from '../../section/enitity/rating-item.entity';
 
-@Entity()
-export class UserEntity {
+@Entity('users')
+export class UserEntity extends BaseEntity {
     @PrimaryGeneratedColumn({ type: 'int' })
     id: number;
 
@@ -33,14 +34,23 @@ export class UserEntity {
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', nullable: true })
     registeredAt: Date;
 
-    @ManyToMany(() => RoleEntity)
+    @ManyToMany(() => RoleEntity, role => role.users)
     @JoinTable({
         name: "user_roles",
         joinColumn: { name: "user_id", referencedColumnName: "id" },
         inverseJoinColumn: { name: "role_id", referencedColumnName: "id" }
     })
-    roles: RoleEntity[];
+    roles: Promise<RoleEntity[]>;
 
     @Column({ nullable: true })
     avatarUrl: string;
+
+    @OneToMany(() => CommentEntity, comment => comment.author)
+    comments: Promise<CommentEntity[]>;
+
+    @OneToMany(() => RatingItemEntity, ratingItem => ratingItem.author)
+    ratings: Promise<RatingItemEntity[]>;
+
+    @OneToMany(() => BoardEntity, board => board.creator)
+    boards: Promise<BoardEntity[]>;
 }

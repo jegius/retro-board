@@ -1,12 +1,29 @@
-import { Entity } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from 'typeorm';
 import { UserEntity } from '../../user/entity/user.entity';
 import { SessionEntity } from '../../session/entity/session.entity';
 
-@Entity()
-export class BoardEntity {
-  creationDate: Date;
+@Entity('boards')
+export class BoardEntity extends BaseEntity {
+  @PrimaryGeneratedColumn()
   id: number;
+
+  @Column()
   title: string;
-  sessions: SessionEntity[];
-  creator: UserEntity;
+
+  @CreateDateColumn()
+  creationDate: Date;
+
+  @OneToMany(() => SessionEntity, session => session.board)
+  sessions: Promise<SessionEntity[]>;
+
+  @ManyToOne(() => UserEntity, user => user.boards)
+  creator: Promise<UserEntity>;
 }

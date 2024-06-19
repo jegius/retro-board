@@ -1,7 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, BaseEntity, ManyToMany, JoinTable } from 'typeorm';
+import { UserEntity } from '../../user/entity/user.entity';
+import { SessionEntity } from '../../session/entity/session.entity';
 
-@Entity()
-export class SectionEntity {
+@Entity('sections')
+export class SectionEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -10,4 +12,11 @@ export class SectionEntity {
 
   @Column({ type: "varchar" })
   type: string;
+
+  @ManyToMany(() => UserEntity)
+  @JoinTable()
+  members: Promise<UserEntity[]>;
+
+  @ManyToOne(() => SessionEntity, session => session.sections)
+  session: Promise<SessionEntity>;
 }

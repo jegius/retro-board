@@ -1,10 +1,11 @@
 import { UserEntity } from '../entity/user.entity';
 import { UserDto } from '../entity/user.dto';
 
-export function userEntitiesToUserDto(user: UserEntity[]): UserDto[] {
-  return user.map(toUserDto);
+export async function userEntitiesToUserDto(user: UserEntity[]): Promise<UserDto[]> {
+  return await Promise.all(user.map(toUserDto));
 }
-export function toUserDto(user: UserEntity): UserDto {
+export async function toUserDto(user: UserEntity): Promise<UserDto> {
   const { id, email, username, registeredAt, roles, avatarUrl } = user;
-  return { id, email, username, registeredAt, roles, avatarUrl };
+  const syncedRoles = await roles;
+  return { id, email, username, registeredAt, roles: syncedRoles, avatarUrl };
 }

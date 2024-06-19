@@ -32,7 +32,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
         username,
         email,
         password: hashedPassword,
-        roles: [role]
+        roles: Promise.resolve([role])
       } as UserEntity);
     }
     return user;
